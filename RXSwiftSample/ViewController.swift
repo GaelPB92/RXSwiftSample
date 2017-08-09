@@ -40,20 +40,29 @@ class ViewController: UIViewController {
         print("Array of Objects created")
         let d = DummyClass()
         
-        DispatchQueue.main.async {
-            Observable.from(arrayOfDummyStructs)
+        
+        let queue = SerialDispatchQueueScheduler(qos: .default)
+        
+        
+        Observable.from(arrayOfDummyStructs)
+                .observeOn(queue)
                 .subscribe(
                     onNext: {
-                        d.printName($0.uid)
-                },
-                    onError: nil,
-                    onCompleted: { print("Operations are completed") },
+                        let value = $0.uid
+                        DispatchQueue.main.async {
+                            d.printName(value)
+                        }
+                    },
+                    onError: { error in
+                        print(error)
+                    },
+                    onCompleted: nil,
                     onDisposed: nil
                 )
                 .addDisposableTo(disposeBag)
-        }
         
-        print("This is finished first")
+        
+        print("-----This is finished first-----")
         
         
         print("***************************************************")
@@ -63,19 +72,23 @@ class ViewController: UIViewController {
             let d = DummyClass()
             DispatchQueue.main.async {
                 Observable.from(optional: dummyStruct(withID: "\(i)"))
+                    .observeOn(queue)
                     .subscribe(
                         onNext: {
-                            d.printName($0.uid)
-                    },
+                            let value = $0.uid
+                            DispatchQueue.main.async {
+                                d.printName(value)
+                            }
+                        },
                         onError: nil,
-                        onCompleted: { print("Operation is completed") },
+                        onCompleted: nil,
                         onDisposed: nil
                     )
                     .addDisposableTo(disposeBag)
             }
             
         }
-        print("This is finished first")
+        print("-----This is finished second-----")
         
     }
     
